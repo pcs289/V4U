@@ -20,6 +20,10 @@ public class Filename {
             return fullPath.substring(dot + 1);
         }
 
+        public String host(){
+            return fullPath.split("/")[2];
+        }
+
         public String basename() { // gets basename without extension
             int dot = fullPath.lastIndexOf(extensionSeparator);
             int sep = fullPath.lastIndexOf(pathSeparator);

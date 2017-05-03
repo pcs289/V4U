@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         urlText = (EditText) findViewById(R.id.urlEditText);
         urlText.setHint(serverURL);
 
