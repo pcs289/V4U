@@ -15,7 +15,9 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -38,9 +40,45 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
+    private void playVideoWithURLS(ArrayList<String> urls){
+        Uri uri = Uri.parse(urls.get(0));
+        videoView.setVideoURI(uri);
+        videoView.requestFocus();
+        videoView.start();
+    }
+
+    private void parseMediaPlaylist(String data){
+
+        ArrayList<String> urls = new ArrayList<String>();
+        String[] sub = data.split(",");
+
+        for(int i = 0; i<sub.length; i++){
+            urls.add(sub[i].split("#")[0]);
+        }
+
+        for(int i = 0; i<urls.size(); i++) {
+            Log.d("urls", urls.get(i));
+        }
+
+        playVideoWithURLS(urls);
+    }
+
     private void parseData(String data){
         //El parameter data es un string que conté el text de l'arxiu m3u8 seleccionat.
         //S'ha de parsejar per saber de quin tipus de playlist es tracta
+        Boolean isMasterAdaptativePlaylist = data.contains("#EXT-X-STREAM-INF:");
+        Boolean isMasterFixedPlaylist = data.contains("#EXT-X-MEDIA:");
+        Boolean isMediaPlaylist = data.contains("#EXTINF:");
+
+        if (isMediaPlaylist){
+            parseMediaPlaylist(data);
+        }
+        else if (isMasterAdaptativePlaylist){
+            Log.d("Decisor", "master adaptative playlist");
+        }
+        else if (isMasterFixedPlaylist){
+            Log.d("Decisor", "master fixed playlist");
+        }
     }
 
     private  String getStringFromInputStream(InputStream is) {

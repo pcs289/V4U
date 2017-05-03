@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     WebView webView;
     Button goButton;
 
-    String serverURL = "http://192.168.1.36";
+    String serverURL = "http://192.168.1.100";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
