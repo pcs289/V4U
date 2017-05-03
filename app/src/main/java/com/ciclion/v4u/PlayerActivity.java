@@ -29,7 +29,6 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         playlistURL = getIntent().getStringExtra("playlistURL");
-        Filename host = new Filename(playlistURL,'/', '.');
         videoView = (VideoView) findViewById(R.id.videoView);
 
         new Downloader().execute(playlistURL);
@@ -77,6 +76,7 @@ public class PlayerActivity extends AppCompatActivity {
             Log.d("Decisor", "master adaptative playlist");
         }
         else if (isMasterFixedPlaylist){
+
             CharSequence qualitats[] = new CharSequence[] {"Alta", "Mitja", "Baixa"};
             new AlertDialog.Builder(PlayerActivity.this)
                     .setTitle("Selecciona la qualitat del video")
@@ -94,7 +94,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void parserFixed(String data, int which){
         String quality = "";
         String url = "http://";
-        Filename host = new Filename(playlistURL,'/', '.');
+        String host =Helper.host(playlistURL);
         switch (which) {
             case 0:
                 quality = "hi";
@@ -108,7 +108,10 @@ public class PlayerActivity extends AppCompatActivity {
             default:
                 break;
         }
-        new Downloader().execute(url.concat(host.host()).concat(Helper.splitFixed(data,quality)));
+
+        String mediaPlaylistURL = url.concat(host).concat("/").concat(Helper.splitFixed(data,quality));
+        Log.d("MediaPlaylistURL-Parsed", mediaPlaylistURL);
+        new Downloader().execute(mediaPlaylistURL);
     }
 
     private  String getStringFromInputStream(InputStream is) {
