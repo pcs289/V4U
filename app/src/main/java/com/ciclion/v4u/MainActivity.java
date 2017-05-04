@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import io.vov.vitamio.LibsChecker;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -19,11 +21,14 @@ public class MainActivity extends AppCompatActivity {
     WebView webView;
     Button goButton;
 
-    String serverURL = "http://192.168.1.39";
+    String serverURL = "http://10.193.112.122";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(!LibsChecker.checkVitamioLibs(this)){
+            return;
+        }
         setContentView(R.layout.activity_main);
 
 

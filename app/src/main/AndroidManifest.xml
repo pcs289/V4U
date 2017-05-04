@@ -18,6 +18,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".PlayerActivity"></activity>
+
+        <activity android:name="io.vov.vitamio.activity.InitActivity"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+
     </application>
 
 </manifest>

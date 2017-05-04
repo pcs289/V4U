@@ -7,8 +7,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.MediaController;
-import android.widget.VideoView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +17,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import io.vov.vitamio.LibsChecker;
+import io.vov.vitamio.widget.VideoView;
+
 public class PlayerActivity extends AppCompatActivity {
 
     String playlistURL;
@@ -27,6 +28,9 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(!LibsChecker.checkVitamioLibs(this)){
+            return;
+        }
         setContentView(R.layout.activity_player);
         playlistURL = getIntent().getStringExtra("playlistURL");
         videoView = (VideoView) findViewById(R.id.videoView);
@@ -37,12 +41,18 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void playVideoWithURLS(ArrayList<String> urls){
-        for (int i = 0; i < urls.size(); i++) {
+        /*for (int i = 0; i < urls.size(); i++) {
             Uri uri = Uri.parse(urls.get(i));
             videoView.setVideoURI(uri);
             videoView.requestFocus();
             videoView.start();
-        }
+        }*/
+
+        Uri uri = Uri.parse(urls.get(0));
+        videoView.setVideoURI(uri);
+        videoView.requestFocus();
+        videoView.start();
+
     }
 
     private void parseMediaPlaylist(String data){
