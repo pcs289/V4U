@@ -1,6 +1,10 @@
 [
     {
-        "merged": "/Users/pau/AndroidStudioProjects/V4U/vitamio/build/intermediates/res/merged/androidTest/debug/raw/libarm.so",
-        "source": "/Users/pau/AndroidStudioProjects/V4U/vitamio/build/intermediates/bundles/debug/res/raw/libarm.so"
+        "merged": "C:\\Users\\pau\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\res\\merged\\androidTest\\debug\\raw\\libarm.so",
+        "source": "C:\\Users\\pau\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\bundles\\debug\\res\\raw\\libarm.so"
+    },
+    {
+        "merged": "C:\\Users\\alber\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\res\\merged\\androidTest\\debug\\raw\\libarm.so",
+        "source": "C:\\Users\\alber\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\bundles\\debug\\res\\raw\\libarm.so"
     }
 ]

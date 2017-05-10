@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     WebView webView;
     Button goButton;
 
-    String serverURL = "http://10.193.112.122";
+    String serverURL = "http://192.168.1.100";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
             if(Helper.extension(url, '.').equals("m3u8")){
                 Intent in = new Intent(MainActivity.this, PlayerActivity.class);
                 in.putExtra("playlistURL", url);
+                in.putExtra("serverURL", serverURL);
                 startActivity(in);
                 return true;
             }else {

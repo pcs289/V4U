@@ -18,12 +18,19 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import io.vov.vitamio.LibsChecker;
+import io.vov.vitamio.widget.MediaController;
 import io.vov.vitamio.widget.VideoView;
+import io.vov.vitamio.MediaPlayer;
 
 public class PlayerActivity extends AppCompatActivity {
 
-    String playlistURL;
+    MediaPlayer mediaPlayer;
+    String playlistURL, serverURL;
     VideoView videoView;
+    Boolean isAdaptative, isTesting;
+    Double currentBandwidth;
+    ArrayList<String> urlsAdaptativeHi, urlsAdaptativeMid, urlsAdaptativeLow, urlsMediaPlaylist;
+    int currentVideo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,62 +38,71 @@ public class PlayerActivity extends AppCompatActivity {
         if(!LibsChecker.checkVitamioLibs(this)){
             return;
         }
+
         setContentView(R.layout.activity_player);
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                currentVideo++;
+                if(isAdaptative){
+                    int quality = evaluateChannel();
+                    if(quality == 1){ //qualitat alta
+                        playVideoWithURLS(urlsAdaptativeHi.get(currentVideo));
+                    } else if(quality == 2){ //qualitat mitja
+                        playVideoWithURLS(urlsAdaptativeMid.get(currentVideo));
+                    } else if(quality == 3){ //qualitat baixa
+                        playVideoWithURLS(urlsAdaptativeLow.get(currentVideo));
+                    }
+                }else{
+                    playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
+                }
+            }
+        });
         playlistURL = getIntent().getStringExtra("playlistURL");
+        serverURL = getIntent().getStringExtra("serverURL");
         videoView = (VideoView) findViewById(R.id.videoView);
+        mediaPlayer = new MediaPlayer(this);
+        isAdaptative = false;
+        isTesting = false;
+        currentVideo = 0;
 
         new Downloader().execute(playlistURL);
-
-
     }
 
-    private void playVideoWithURLS(ArrayList<String> urls){
-        /*for (int i = 0; i < urls.size(); i++) {
-            Uri uri = Uri.parse(urls.get(i));
-            videoView.setVideoURI(uri);
-            videoView.requestFocus();
-            videoView.start();
-        }*/
+    private void playVideoWithURLS(String url){
+        Uri uri = Uri.parse(url);
+        playVideo(uri);
+    }
 
-        Uri uri = Uri.parse(urls.get(0));
+    private int evaluateChannel(){
+        int quality;
+        
+        return quality;
+    }
+
+    private void playVideo(Uri uri){
         videoView.setVideoURI(uri);
+        videoView.setMediaController(new MediaController(this));
         videoView.requestFocus();
         videoView.start();
-
-    }
-
-    private void parseMediaPlaylist(String data){
-
-        ArrayList<String> urls = new ArrayList<String>();
-        String[] sub = data.split(",");
-
-        for(int i = 0; i<sub.length; i++){
-            urls.add(sub[i].split("#")[0]);
-        }
-
-        for(int i = 0; i<urls.size(); i++) {
-            Log.d("urls", urls.get(i));
-        }
-
-        playVideoWithURLS(urls);
     }
 
     private void parseData(final String data){
-        //El parameter data es un string que conté el text de l'arxiu m3u8 seleccionat.
+        //El parametre data es un string que conté el text de l'arxiu m3u8 seleccionat.
         //S'ha de parsejar per saber de quin tipus de playlist es tracta
         Boolean isMasterAdaptativePlaylist = data.contains("#EXT-X-STREAM-INF:");
         Boolean isMasterFixedPlaylist = data.contains("#EXT-X-MEDIA:");
         Boolean isMediaPlaylist = data.contains("#EXTINF:");
 
         if (isMediaPlaylist){
-            parseMediaPlaylist(data);
+            parserMediaPlaylist(data, currentVideo);
         }
         else if (isMasterAdaptativePlaylist){
-
+            isAdaptative = true;
+            parserAdaptative(data);
             Log.d("Decisor", "master adaptative playlist");
         }
         else if (isMasterFixedPlaylist){
-
             CharSequence qualitats[] = new CharSequence[] {"Alta", "Mitja", "Baixa"};
             new AlertDialog.Builder(PlayerActivity.this)
                     .setTitle("Selecciona la qualitat del video")
@@ -96,15 +112,34 @@ public class PlayerActivity extends AppCompatActivity {
                             parserFixed(data, which);
                         }
             }).show();
-
             Log.d("Decisor", "master fixed playlist");
+        }
+    }
+
+    private void parserMediaPlaylistFromAdaptative (ArrayList<String> urls, int currentVideo){
+        playVideoWithURLS(urls.get(currentVideo));
+    }
+
+    private void parserMediaPlaylist(String data, int currentVideo){
+        urlsMediaPlaylist = Helper.getUrlsFromMediaPlaylist(data);
+        for(int i = 0; i<urlsMediaPlaylist.size(); i++) {
+            Log.d("urls", urlsMediaPlaylist.get(i));
+        }
+
+        playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
+    }
+
+    private void parserAdaptative(String data){
+        ArrayList<String> info = Helper.infoAdaptative(data);
+        for (int i = 1; i < info.size(); i += 2){ //ens descarreguem els 3 tipus d'adaptatives
+            new Downloader().execute(info.get(i));
         }
     }
 
     private void parserFixed(String data, int which){
         String quality = "";
         String url = "http://";
-        String host =Helper.host(playlistURL);
+        String host = Helper.host(playlistURL);
         switch (which) {
             case 0:
                 quality = "hi";
@@ -175,14 +210,51 @@ public class PlayerActivity extends AppCompatActivity {
 
             try {
                 connection = (HttpURLConnection) url.openConnection();
-
                 connection.connect();
-
-
                 InputStream inputStream = connection.getInputStream();
-
                 resultString = getStringFromInputStream(inputStream);
 
+            }catch(IOException e){
+                e.printStackTrace();
+            }finally{
+                connection.disconnect();
+            }
+            return resultString;
+        }
+
+        protected void onPostExecute(String result) {
+            Log.d("Download result", result);
+            if(isAdaptative) {
+                if (result.contains("hi")) {
+                    urlsAdaptativeHi = Helper.getUrlsFromMediaPlaylist(result);
+                    parserMediaPlaylistFromAdaptative(urlsAdaptativeHi, currentVideo);
+                } else if (result.contains("lo")) {
+                    urlsAdaptativeLow = Helper.getUrlsFromMediaPlaylist(result);
+                    parserMediaPlaylistFromAdaptative(urlsAdaptativeLow, currentVideo);
+                } else if (result.contains("me")) {
+                    urlsAdaptativeMid = Helper.getUrlsFromMediaPlaylist(result);
+                    parserMediaPlaylistFromAdaptative(urlsAdaptativeMid, currentVideo);
+                }
+            }else {
+                parseData(result);
+            }
+        }
+
+    }
+    private class Timer extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... timer){
+            long startTime = System.currentTimeMillis();
+            URL url = stringToURL(serverURL+"/Justice-dance/hi/fileSequence5.ts");
+            String resultString = null;
+            HttpURLConnection connection = null;
+
+            try {
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+                InputStream inputStream = connection.getInputStream();
+                resultString = getStringFromInputStream(inputStream);
 
             }catch(IOException e){
                 e.printStackTrace();
@@ -190,14 +262,13 @@ public class PlayerActivity extends AppCompatActivity {
                 connection.disconnect();
             }
 
-            return resultString;
+            return String.valueOf(startTime);
         }
 
-        protected void onPostExecute(String result) {
-
-            Log.d("Download result", result);
-
-            parseData(result);
+        protected void onPostExecute(String startTimer) {
+            long endTime = System.currentTimeMillis();
+            long time = endTime-Long.parseLong(startTimer);
+            currentBandwidth = (3.7*1024*1024)/((double) time);
         }
 
     }
