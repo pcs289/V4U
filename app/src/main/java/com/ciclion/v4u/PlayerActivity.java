@@ -85,17 +85,29 @@ public class PlayerActivity extends AppCompatActivity {
         new Downloader().execute(playlistURL);
     }
 
+    /**
+     * It changes the videoView uri expecting for the onPreparedListener to play it once loaded
+     * @param uri
+     */
     private void playVideo(Uri uri){
         Log.d("Reproduint video", ""+uri);
         videoView.setVideoURI(uri);
     }
 
+    /**
+     * Parses string urls into URI objects
+     * @param url
+     */
     private void playVideoWithURLS(String url){
         Uri uri = Uri.parse(url);
         Log.d("playVideoWithURLS", ""+url);
         playVideo(uri);
     }
 
+    /**
+     * It evaluates channel bandwidth downloading a file of known size storing its result in the global variable currentBandwidth
+     * @return quality
+     */
     private int evaluateChannel() {
         int quality = 0;
         try {
@@ -118,6 +130,10 @@ public class PlayerActivity extends AppCompatActivity {
         return quality;
     }
 
+    /**
+     * It acts like a decisor to choose amongst the three different types of playlist
+     * @param data downloaded string containing the m3u8 text to be parsed
+     */
     private void parseData(final String data){
         //El parametre data es un string que conté el text de l'arxiu m3u8 seleccionat.
         //S'ha de parsejar per saber de quin tipus de playlist es tracta
@@ -148,10 +164,20 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * It parses a mediaPlaylist which has come from a AdaptativeMediaPlaylist
+     * @param urls ArrayList of URLS depending on bandwidth
+     * @param currentVideo reference counter on the current cut of the full video
+     */
     private void parserMediaPlaylistFromAdaptative (ArrayList<String> urls, int currentVideo){
         playVideoWithURLS(urls.get(currentVideo));
     }
 
+    /**
+     * It parses a mediaPlaylist to get the URL into an ArrayList of Strings
+     * @param data Downloaded String containing mediaPlaylist text
+     * @param currentVideo reference counter on the current cut of the full video
+     */
     private void parserMediaPlaylist(String data, int currentVideo){
         urlsMediaPlaylist = Helper.getUrlsFromMediaPlaylist(data);
         for(int i = 0; i<urlsMediaPlaylist.size(); i++) {
@@ -161,6 +187,10 @@ public class PlayerActivity extends AppCompatActivity {
         playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
     }
 
+    /**
+     * It parses adaptatives master playlists to get its different bandwidth and URLs
+     * @param data Downloaded String containing MasterAdaptativePlaylist text
+     */
     private void parserAdaptative(String data){
         ArrayList<String> info = Helper.infoAdaptative(data);
         for (int i = 1; i < info.size(); i += 2){ //ens descarreguem els 3 tipus d'adaptatives
@@ -172,6 +202,11 @@ public class PlayerActivity extends AppCompatActivity {
         lowBW = Double.parseDouble(info.get(0));
     }
 
+    /**
+     * It parses fixed master playlists to get the URLs depending upon quality selected
+     * @param data Downloaded String containing MasterFixedPlaylist text
+     * @param which Integer representing the three diferent options selected by the user(high, mid or low quality)
+     */
     private void parserFixed(String data, int which){
         String quality = "";
         String url = "http://";
@@ -195,6 +230,11 @@ public class PlayerActivity extends AppCompatActivity {
         new Downloader().execute(mediaPlaylistURL);
     }
 
+    /**
+     * It reads inputStreams and converts it into a string
+     * @param is inputStream to be converted
+     * @return returns the String out of the converted InputStream
+     */
     private  String getStringFromInputStream(InputStream is) {
 
         BufferedReader br = null;

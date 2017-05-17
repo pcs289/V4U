@@ -1,6 +1,10 @@
 [
     {
-        "merged": "C:\\Users\\alber\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\res\\merged\\androidTest\\debug\\layout\\mediacontroller.xml",
-        "source": "C:\\Users\\alber\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\bundles\\debug\\res\\layout\\mediacontroller.xml"
+        "merged": "/Users/pau/AndroidStudioProjects/V4U/vitamio/build/intermediates/res/merged/androidTest/debug/layout/mediacontroller.xml",
+        "source": "/Users/pau/AndroidStudioProjects/V4U/vitamio/build/intermediates/bundles/debug/res/layout/mediacontroller.xml"
+    },
+    {
+        "merged": "/Users/pau/AndroidStudioProjects/V4U/C:\\Users\\alber\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\res\\merged\\androidTest\\debug\\layout\\mediacontroller.xml",
+        "source": "/Users/pau/AndroidStudioProjects/V4U/C:\\Users\\alber\\AndroidStudioProjects\\V4U\\vitamio\\build\\intermediates\\bundles\\debug\\res\\layout\\mediacontroller.xml"
     }
 ]
