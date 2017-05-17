@@ -81,31 +81,5 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         }
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-
-            Log.d("Error webview","Desc: "+description+"errCode: "+errorCode);
-            Toast.makeText(MainActivity.this, "Oh no! " + description, Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            // TODO Auto-generated method stub
-            super.onPageFinished(view, url);
-
-
-            //what you want to do when the page finished loading, eg. give some message, show progress bar, etc
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            // TODO Auto-generated method stub
-            super.onPageStarted(view, url, favicon);
-
-            //what you want to do when the page starts loading, eg. give some message
-        }
-
-
     }
 }

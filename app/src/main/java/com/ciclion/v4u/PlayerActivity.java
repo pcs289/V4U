@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import io.vov.vitamio.LibsChecker;
 import io.vov.vitamio.widget.MediaController;
@@ -28,7 +29,7 @@ public class PlayerActivity extends AppCompatActivity {
     String playlistURL, serverURL;
     VideoView videoView;
     Boolean isAdaptative, isTesting;
-    Double currentBandwidth;
+    Double currentBandwidth, hiBW, midBW, lowBW;
     ArrayList<String> urlsAdaptativeHi, urlsAdaptativeMid, urlsAdaptativeLow, urlsMediaPlaylist;
     int currentVideo;
 
@@ -38,26 +39,7 @@ public class PlayerActivity extends AppCompatActivity {
         if(!LibsChecker.checkVitamioLibs(this)){
             return;
         }
-
         setContentView(R.layout.activity_player);
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                currentVideo++;
-                if(isAdaptative){
-                    int quality = evaluateChannel();
-                    if(quality == 1){ //qualitat alta
-                        playVideoWithURLS(urlsAdaptativeHi.get(currentVideo));
-                    } else if(quality == 2){ //qualitat mitja
-                        playVideoWithURLS(urlsAdaptativeMid.get(currentVideo));
-                    } else if(quality == 3){ //qualitat baixa
-                        playVideoWithURLS(urlsAdaptativeLow.get(currentVideo));
-                    }
-                }else{
-                    playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
-                }
-            }
-        });
         playlistURL = getIntent().getStringExtra("playlistURL");
         serverURL = getIntent().getStringExtra("serverURL");
         videoView = (VideoView) findViewById(R.id.videoView);
@@ -66,25 +48,74 @@ public class PlayerActivity extends AppCompatActivity {
         isTesting = false;
         currentVideo = 0;
 
+        MediaController mediaController = new MediaController(this);
+        videoView.setMediaController(mediaController);
+        videoView.requestFocus();
+
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                videoView.start();
+            }
+        });
+
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                currentVideo++;
+                if(isAdaptative){
+                    int quality = evaluateChannel();
+                    if(quality == 1){ //qualitat alta
+                        playVideoWithURLS(urlsAdaptativeHi.get(currentVideo));
+                        Log.d("Qualitat video", "Alta");
+                    } else if(quality == 2){ //qualitat mitja
+                        playVideoWithURLS(urlsAdaptativeMid.get(currentVideo));
+                        Log.d("Qualitat video", "Mitja");
+                    } else if(quality == 3){ //qualitat baixa
+                        playVideoWithURLS(urlsAdaptativeLow.get(currentVideo));
+                        Log.d("Qualitat video", "Baixa");
+                    }
+                }else{
+                    playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
+                }
+            }
+        });
+
+
         new Downloader().execute(playlistURL);
+    }
+
+    private void playVideo(Uri uri){
+        Log.d("Reproduint video", ""+uri);
+        videoView.setVideoURI(uri);
     }
 
     private void playVideoWithURLS(String url){
         Uri uri = Uri.parse(url);
+        Log.d("playVideoWithURLS", ""+url);
         playVideo(uri);
     }
 
-    private int evaluateChannel(){
-        int quality;
-        
-        return quality;
-    }
+    private int evaluateChannel() {
+        int quality = 0;
+        try {
+            new Timer().execute().get();
+            Log.d("Avaluant Canal", "Timer finalitzat amb currentBandwidth "+currentBandwidth);
+            if(currentBandwidth >= hiBW){
+                quality = 1;
+            }else if(currentBandwidth >= midBW){
+                quality = 2;
+            }else{
+                quality = 3;
+            }
 
-    private void playVideo(Uri uri){
-        videoView.setVideoURI(uri);
-        videoView.setMediaController(new MediaController(this));
-        videoView.requestFocus();
-        videoView.start();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        Log.d("Qualitat del canal", ""+quality);
+        return quality;
     }
 
     private void parseData(final String data){
@@ -96,11 +127,12 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (isMediaPlaylist){
             parserMediaPlaylist(data, currentVideo);
+            Log.d("Decisor", "Media Playlist");
         }
         else if (isMasterAdaptativePlaylist){
             isAdaptative = true;
             parserAdaptative(data);
-            Log.d("Decisor", "master adaptative playlist");
+            Log.d("Decisor", "Master Adaptative Playlist");
         }
         else if (isMasterFixedPlaylist){
             CharSequence qualitats[] = new CharSequence[] {"Alta", "Mitja", "Baixa"};
@@ -112,7 +144,7 @@ public class PlayerActivity extends AppCompatActivity {
                             parserFixed(data, which);
                         }
             }).show();
-            Log.d("Decisor", "master fixed playlist");
+            Log.d("Decisor", "Master Fixed Playlist");
         }
     }
 
@@ -134,6 +166,10 @@ public class PlayerActivity extends AppCompatActivity {
         for (int i = 1; i < info.size(); i += 2){ //ens descarreguem els 3 tipus d'adaptatives
             new Downloader().execute(info.get(i));
         }
+        Log.d("Descarregades", "Tres qualitats adaptatives");
+        hiBW = Double.parseDouble(info.get(4));
+        midBW = Double.parseDouble(info.get(2));
+        lowBW = Double.parseDouble(info.get(0));
     }
 
     private void parserFixed(String data, int which){
@@ -163,10 +199,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
-
         String line;
         try {
-
             br = new BufferedReader(new InputStreamReader(is));
             while ((line = br.readLine()) != null) {
                 sb.append(line);
@@ -223,8 +257,13 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(String result) {
-            Log.d("Download result", result);
+            if(result.contains("BANDWIDTH")) {
+                parseData(result);
+                return;
+            }
+
             if(isAdaptative) {
+                Log.d("MasterPlaylist", "Adaptativa");
                 if (result.contains("hi")) {
                     urlsAdaptativeHi = Helper.getUrlsFromMediaPlaylist(result);
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeHi, currentVideo);
@@ -236,6 +275,7 @@ public class PlayerActivity extends AppCompatActivity {
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeMid, currentVideo);
                 }
             }else {
+                Log.d("MasterPlaylist", "Fixa o mediaPlaylist");
                 parseData(result);
             }
         }
@@ -268,7 +308,8 @@ public class PlayerActivity extends AppCompatActivity {
         protected void onPostExecute(String startTimer) {
             long endTime = System.currentTimeMillis();
             long time = endTime-Long.parseLong(startTimer);
-            currentBandwidth = (3.7*1024*1024)/((double) time);
+            currentBandwidth = (3.7*1024*1024)/((double) time);//tamany del arxiu entre el temps de descarrega
+            Log.d("Bandwidth del canal", "Calculat");
         }
 
     }

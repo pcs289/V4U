@@ -18,7 +18,7 @@ public class Helper {
         ArrayList<String> urls = new ArrayList<String>();
         String[] sub = data.split(",");
 
-        for(int i = 0; i<sub.length; i++){
+        for(int i = 1; i<sub.length; i++){
             urls.add(sub[i].split("#")[0]);
         }
         return urls;
@@ -34,7 +34,7 @@ public class Helper {
         String[] parts = data.split("BANDWIDTH=");
         for (int i = 1; i < parts.length; i++){
             retorn.add(parts[i].split(",CODECS")[0]);
-            retorn.add("http" + betweenStrings(parts[i], "http", "/prog") + "/prog");
+            retorn.add("http" + betweenStrings(parts[i], "http", ".m3u8") + ".m3u8");
         }
         return retorn;
     }
