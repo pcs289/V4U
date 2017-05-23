@@ -23,6 +23,9 @@ import io.vov.vitamio.widget.MediaController;
 import io.vov.vitamio.widget.VideoView;
 import io.vov.vitamio.MediaPlayer;
 
+/**
+ * Player activity with a videoView to play the m3u8 source selected in the Browser activity
+ */
 public class PlayerActivity extends AppCompatActivity {
 
     MediaPlayer mediaPlayer;
@@ -87,7 +90,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     /**
      * It changes the videoView uri expecting for the onPreparedListener to play it once loaded
-     * @param uri
+     * @param uri URI object to be set to the videoView
      */
     private void playVideo(Uri uri){
         Log.d("Reproduint video", ""+uri);
@@ -96,7 +99,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     /**
      * Parses string urls into URI objects
-     * @param url
+     * @param url URL string to be parsed into an URI object
      */
     private void playVideoWithURLS(String url){
         Uri uri = Uri.parse(url);
@@ -262,6 +265,11 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * It converts an input string into a URL object
+     * @param urlString string to be converted into URL object
+     * @return the converted URL
+     */
     private  URL stringToURL(String urlString){
         try{
             URL url = new URL(urlString);
@@ -272,7 +280,9 @@ public class PlayerActivity extends AppCompatActivity {
         return null;
     }
 
-
+    /**
+     * AsyncTask in charge of downloading the m3u8 files through HTTP
+     */
     private class Downloader extends AsyncTask<String, Void, String> {
 
         @Override
@@ -321,6 +331,10 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
     }
+
+    /**
+     * AsyncTask in charge of downloading a specific file in order to estimate the channel's bandwidth
+     */
     private class Timer extends AsyncTask<String, Void, String> {
 
         @Override
@@ -347,7 +361,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         protected void onPostExecute(String startTimer) {
             long endTime = System.currentTimeMillis();
-            long time = endTime-Long.parseLong(startTimer);
+            long time = endTime - Long.parseLong(startTimer);
             currentBandwidth = (3.7*1024*1024)/((double) time);//tamany del arxiu entre el temps de descarrega
             Log.d("Bandwidth del canal", "Calculat");
         }

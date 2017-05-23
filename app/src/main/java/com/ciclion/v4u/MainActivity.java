@@ -11,6 +11,9 @@ import android.widget.EditText;
 
 import io.vov.vitamio.LibsChecker;
 
+/**
+ * Browser activity with a webView to browse PBE server
+ */
 public class MainActivity extends AppCompatActivity {
 
 
@@ -62,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Custom WebViewClient made to fire an intent to PlayerActivity when a m3u8 file is browsed
+     */
     private class CustomWebViewClient extends WebViewClient {
 
         @Override
