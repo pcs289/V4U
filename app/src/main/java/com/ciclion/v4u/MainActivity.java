@@ -13,6 +13,7 @@ import io.vov.vitamio.LibsChecker;
 
 /**
  * Browser activity with a webView to browse PBE server
+ * It has been developed by Pau
  */
 public class MainActivity extends AppCompatActivity {
 

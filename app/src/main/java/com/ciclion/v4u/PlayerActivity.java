@@ -25,6 +25,7 @@ import io.vov.vitamio.MediaPlayer;
 
 /**
  * Player activity with a videoView to play the m3u8 source selected in the Browser activity
+ * It has been developed by Alberto, Mar and Cai
  */
 public class PlayerActivity extends AppCompatActivity {
 
@@ -282,6 +283,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     /**
      * AsyncTask in charge of downloading the m3u8 files through HTTP
+     * Made by Pau
      */
     private class Downloader extends AsyncTask<String, Void, String> {
 
@@ -315,13 +317,13 @@ public class PlayerActivity extends AppCompatActivity {
             if(isAdaptative) {
                 Log.d("MasterPlaylist", "Adaptativa");
                 if (result.contains("hi")) {
-                    urlsAdaptativeHi = Helper.getUrlsFromMediaPlaylist(result);
+                    urlsAdaptativeHi = Helper.extractT(Helper.getUrlsFromMediaPlaylist(result));
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeHi, currentVideo);
                 } else if (result.contains("lo")) {
-                    urlsAdaptativeLow = Helper.getUrlsFromMediaPlaylist(result);
+                    urlsAdaptativeLow = Helper.extractT(Helper.getUrlsFromMediaPlaylist(result));
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeLow, currentVideo);
                 } else if (result.contains("me")) {
-                    urlsAdaptativeMid = Helper.getUrlsFromMediaPlaylist(result);
+                    urlsAdaptativeMid = Helper.extractT(Helper.getUrlsFromMediaPlaylist(result));
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeMid, currentVideo);
                 }
             }else {
@@ -334,6 +336,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     /**
      * AsyncTask in charge of downloading a specific file in order to estimate the channel's bandwidth
+     * Made by Pau
      */
     private class Timer extends AsyncTask<String, Void, String> {
 

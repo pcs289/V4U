@@ -1,9 +1,11 @@
 package com.ciclion.v4u;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
  * Helper class with some commonly used methods
+ * It has been developed by Cai and Pau
  */
 public class Helper {
 
@@ -32,6 +34,19 @@ public class Helper {
             urls.add(sub[i].split("#")[0]);
         }
         return urls;
+    }
+
+    /**
+     * It removes the first character of all the elements of the input ArrayList<String>
+     * @param ar input array to be modified
+     * @return the input array without the first character '/t'
+     */
+    public static ArrayList<String> extractT(ArrayList<String> ar){
+        for (int i=0; i < ar.size(); i++){
+            ar.add(i, ar.get(i).substring(1));
+        }
+
+        return ar;
     }
 
     /**
