@@ -43,7 +43,7 @@ public class Helper {
      */
     public static ArrayList<String> extractT(ArrayList<String> ar){
         for (int i=0; i < ar.size(); i++){
-            ar.add(i, ar.get(i).substring(1));
+            ar.set(i, ar.get(i).substring(1));
         }
 
         return ar;

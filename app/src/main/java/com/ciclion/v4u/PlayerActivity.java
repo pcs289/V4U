@@ -51,6 +51,7 @@ public class PlayerActivity extends AppCompatActivity {
         isAdaptative = false;
         isTesting = false;
         currentVideo = 0;
+        currentBandwidth = Double.valueOf(296476);
 
         MediaController mediaController = new MediaController(this);
         videoView.setMediaController(mediaController);
@@ -95,6 +96,9 @@ public class PlayerActivity extends AppCompatActivity {
      */
     private void playVideo(Uri uri){
         Log.d("Reproduint video", ""+uri);
+        if(isAdaptative){
+            new Timer().execute();
+        }
         videoView.setVideoURI(uri);
     }
 
@@ -114,21 +118,13 @@ public class PlayerActivity extends AppCompatActivity {
      */
     private int evaluateChannel() {
         int quality = 0;
-        try {
-            new Timer().execute().get();
-            Log.d("Avaluant Canal", "Timer finalitzat amb currentBandwidth "+currentBandwidth);
-            if(currentBandwidth >= hiBW){
-                quality = 1;
-            }else if(currentBandwidth >= midBW){
-                quality = 2;
-            }else{
-                quality = 3;
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        Log.d("Avaluant Canal", "Timer finalitzat amb currentBandwidth "+currentBandwidth);
+        if(currentBandwidth >= hiBW){
+            quality = 1;
+        }else if(currentBandwidth >= midBW){
+            quality = 2;
+        }else{
+            quality = 3;
         }
         Log.d("Qualitat del canal", ""+quality);
         return quality;
@@ -344,14 +340,12 @@ public class PlayerActivity extends AppCompatActivity {
         protected String doInBackground(String... timer){
             long startTime = System.currentTimeMillis();
             URL url = stringToURL(serverURL+"/Justice-dance/hi/fileSequence5.ts");
-            String resultString = null;
             HttpURLConnection connection = null;
 
             try {
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
                 InputStream inputStream = connection.getInputStream();
-                resultString = getStringFromInputStream(inputStream);
 
             }catch(IOException e){
                 e.printStackTrace();
@@ -364,8 +358,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         protected void onPostExecute(String startTimer) {
             long endTime = System.currentTimeMillis();
-            long time = endTime - Long.parseLong(startTimer);
-            currentBandwidth = (3.7*1024*1024)/((double) time);//tamany del arxiu entre el temps de descarrega
+            long time = (endTime - Long.parseLong(startTimer));
+            currentBandwidth = (3.7*1024*1024*1000)/((double) time);//tamany del arxiu entre el temps de descarrega
+            currentBandwidth = ((double) currentBandwidth.intValue());
             Log.d("Bandwidth del canal", "Calculat");
         }
 
