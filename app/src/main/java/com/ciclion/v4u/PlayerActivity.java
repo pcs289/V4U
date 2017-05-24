@@ -68,20 +68,20 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 currentVideo++;
-                if(isAdaptative){
+                if(isAdaptative && currentVideo < urlsAdaptativeHi.size()){
                     int quality = evaluateChannel();
                     if(quality == 1){ //qualitat alta
                         playVideoWithURLS(urlsAdaptativeHi.get(currentVideo));
-                        Log.d("Qualitat video", "Alta");
                     } else if(quality == 2){ //qualitat mitja
                         playVideoWithURLS(urlsAdaptativeMid.get(currentVideo));
-                        Log.d("Qualitat video", "Mitja");
                     } else if(quality == 3){ //qualitat baixa
                         playVideoWithURLS(urlsAdaptativeLow.get(currentVideo));
-                        Log.d("Qualitat video", "Baixa");
                     }
-                }else{
+                }else if(currentVideo < urlsMediaPlaylist.size()){
                     playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
+                }else{
+                    reset();
+                    videoView.stopPlayback();
                 }
             }
         });
@@ -90,12 +90,30 @@ public class PlayerActivity extends AppCompatActivity {
         new Downloader().execute(playlistURL);
     }
 
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        playlistURL = getIntent().getStringExtra("playlistURL");
+        serverURL = getIntent().getStringExtra("serverURL");
+        new Downloader().execute(playlistURL);
+    }
+
+    /**
+     * It resets the params to the initial values
+     */
+    public void reset(){
+        isAdaptative = false;
+        isTesting = false;
+        currentVideo = 0;
+        currentBandwidth = Double.valueOf(296476);
+    }
+
     /**
      * It changes the videoView uri expecting for the onPreparedListener to play it once loaded
      * @param uri URI object to be set to the videoView
      */
     private void playVideo(Uri uri){
-        Log.d("Reproduint video", ""+uri);
         if(isAdaptative){
             new Timer().execute();
         }
@@ -108,7 +126,6 @@ public class PlayerActivity extends AppCompatActivity {
      */
     private void playVideoWithURLS(String url){
         Uri uri = Uri.parse(url);
-        Log.d("playVideoWithURLS", ""+url);
         playVideo(uri);
     }
 
@@ -118,7 +135,6 @@ public class PlayerActivity extends AppCompatActivity {
      */
     private int evaluateChannel() {
         int quality = 0;
-        Log.d("Avaluant Canal", "Timer finalitzat amb currentBandwidth "+currentBandwidth);
         if(currentBandwidth >= hiBW){
             quality = 1;
         }else if(currentBandwidth >= midBW){
@@ -126,7 +142,6 @@ public class PlayerActivity extends AppCompatActivity {
         }else{
             quality = 3;
         }
-        Log.d("Qualitat del canal", ""+quality);
         return quality;
     }
 
@@ -143,12 +158,10 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (isMediaPlaylist){
             parserMediaPlaylist(data, currentVideo);
-            Log.d("Decisor", "Media Playlist");
         }
         else if (isMasterAdaptativePlaylist){
             isAdaptative = true;
             parserAdaptative(data);
-            Log.d("Decisor", "Master Adaptative Playlist");
         }
         else if (isMasterFixedPlaylist){
             CharSequence qualitats[] = new CharSequence[] {"Alta", "Mitja", "Baixa"};
@@ -160,7 +173,6 @@ public class PlayerActivity extends AppCompatActivity {
                             parserFixed(data, which);
                         }
             }).show();
-            Log.d("Decisor", "Master Fixed Playlist");
         }
     }
 
@@ -180,10 +192,6 @@ public class PlayerActivity extends AppCompatActivity {
      */
     private void parserMediaPlaylist(String data, int currentVideo){
         urlsMediaPlaylist = Helper.getUrlsFromMediaPlaylist(data);
-        for(int i = 0; i<urlsMediaPlaylist.size(); i++) {
-            Log.d("urls", urlsMediaPlaylist.get(i));
-        }
-
         playVideoWithURLS(urlsMediaPlaylist.get(currentVideo));
     }
 
@@ -196,7 +204,6 @@ public class PlayerActivity extends AppCompatActivity {
         for (int i = 1; i < info.size(); i += 2){ //ens descarreguem els 3 tipus d'adaptatives
             new Downloader().execute(info.get(i));
         }
-        Log.d("Descarregades", "Tres qualitats adaptatives");
         hiBW = Double.parseDouble(info.get(4));
         midBW = Double.parseDouble(info.get(2));
         lowBW = Double.parseDouble(info.get(0));
@@ -226,7 +233,6 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         String mediaPlaylistURL = url.concat(host).concat("/").concat(Helper.splitFixed(data,quality));
-        Log.d("MediaPlaylistURL-Parsed", mediaPlaylistURL);
         new Downloader().execute(mediaPlaylistURL);
     }
 
@@ -311,7 +317,6 @@ public class PlayerActivity extends AppCompatActivity {
             }
 
             if(isAdaptative) {
-                Log.d("MasterPlaylist", "Adaptativa");
                 if (result.contains("hi")) {
                     urlsAdaptativeHi = Helper.extractT(Helper.getUrlsFromMediaPlaylist(result));
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeHi, currentVideo);
@@ -323,7 +328,6 @@ public class PlayerActivity extends AppCompatActivity {
                     parserMediaPlaylistFromAdaptative(urlsAdaptativeMid, currentVideo);
                 }
             }else {
-                Log.d("MasterPlaylist", "Fixa o mediaPlaylist");
                 parseData(result);
             }
         }
@@ -361,7 +365,6 @@ public class PlayerActivity extends AppCompatActivity {
             long time = (endTime - Long.parseLong(startTimer));
             currentBandwidth = (3.7*1024*1024*1000)/((double) time);//tamany del arxiu entre el temps de descarrega
             currentBandwidth = ((double) currentBandwidth.intValue());
-            Log.d("Bandwidth del canal", "Calculat");
         }
 
     }
